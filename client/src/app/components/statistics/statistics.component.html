@@ -19,5 +19,37 @@
         </mat-form-field>
         <button mat-raised-button color="primary" (click)="fetchStatistics()">Get Statistics</button>
     </form>
-    <canvas id="reservationChart"></canvas>
+    <button mat-raised-button (click)="toggleTable()">{{showTable ? 'Show Chart':'Show Table'}}</button>
+    <canvas #chartCanvas *ngIf="!showTable" id="reservationChart"></canvas>
+
+    <div *ngIf="showTable">
+        <table mat-table [dataSource]="statisticsData" class="mat-elevation-z8">
+            <ng-container matColumnDef="weekdayName">
+                <th mat-header-cell *matHeaderCellDef>Weekday</th>
+                <td mat-cell *matCellDef="let element">{{element.weekdayName}}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="reservation_count">
+                <th mat-header-cell *matHeaderCellDef>Reservation</th>
+                <td mat-cell *matCellDef="let element">{{element.reservation_count}}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="total_people">
+                <th mat-header-cell *matHeaderCellDef>Total People</th>
+                <td mat-cell *matCellDef="let element">{{element.total_people}}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="avg_group_size">
+                <th mat-header-cell *matHeaderCellDef>Average Group Size</th>
+                <td mat-cell *matCellDef="let element">{{element.avg_group_size | number:'1.2-2'}}</td>
+            </ng-container>
+
+            <thead>
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            </thead>
+            <tbody>
+                <tr mat-row *matRowDef="let row;columns:displayedColumns"></tr>
+            </tbody>
+        </table>
+    </div>
 </mat-card>
