@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatTableModule } from '@angular/material/table';
 import { StatisticsService } from '../../services/statistics.service';
 import { Chart } from 'chart.js/auto';
 
@@ -22,6 +23,7 @@ import { Chart } from 'chart.js/auto';
     MatButtonModule,
     MatCardModule,
     MatNativeDateModule,
+    MatTableModule,
   ],
   templateUrl: './statistics.component.html',
   styleUrl: './statistics.component.scss',
@@ -59,6 +61,7 @@ export class StatisticsComponent implements OnInit {
     this.statisticsService
       .getStatistics(validBetriebId, formattedStartDate, formattedEndDate)
       .subscribe((data) => {
+        console.log(`Fetched Data`, data);
         this.renderChart(data);
       });
   }
@@ -67,31 +70,39 @@ export class StatisticsComponent implements OnInit {
     const canvas = document.getElementById(
       'reservationChart'
     ) as HTMLCanvasElement;
-    if (!canvas) return;
-    console.log(69);
-    if (this.chartInstance) {
-      this.chartInstance.destroy();
+
+    if (Chart.getChart(canvas)) {
+      Chart.getChart(canvas)?.destroy();
     }
-    console.log(this.chartInstance, data);
+
+    if (!data || data.length === 0) {
+      console.error(`No data available for chart rendering`);
+      return;
+    }
+
+    const label = data.map(
+      (day) =>
+        [
+          'Sunday',
+          'Monday',
+          'Tuesday',
+          'Wednesday',
+          'Thursday',
+          'Friday',
+          'Saturday',
+        ][Number(day.weekday)]
+    );
+
+    const reservations = data.map((d) => d.reservation_count);
+
     this.chartInstance = new Chart(canvas, {
       type: 'bar',
       data: {
-        labels: data.map(
-          (day) =>
-            [
-              'Sunday',
-              'Monday',
-              'Tuesday',
-              'Wednesday',
-              'Thursday',
-              'Friday',
-              'Saturday',
-            ][day.weekday]
-        ),
+        labels: label,
         datasets: [
           {
             label: 'Reservations',
-            data: data.map((d) => d.reservation_count),
+            data: reservations,
             backgroundColor: 'rgba(75,192,192,0.2)',
             borderColor: 'rgba(75,192,192,1)',
             borderWidth: 1,
@@ -100,7 +111,6 @@ export class StatisticsComponent implements OnInit {
       },
       options: {
         responsive: true,
-        maintainAspectRatio: false,
         scales: {
           y: { beginAtZero: true },
         },

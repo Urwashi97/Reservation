@@ -1,7 +1,8 @@
 const express = require("express");
-const { Sequelize, DataTypes } = require("sequelize");
+const { Sequelize, DataTypes, QueryTypes } = require("sequelize");
 const cors = require("cors");
 const path = require("path");
+("");
 
 const dbPath = path.resolve(__dirname, "sqlite.db");
 
@@ -30,7 +31,7 @@ const Reservation = sequelize.define(
   }
 );
 
-app.use(cors())
+app.use(cors());
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
@@ -80,9 +81,12 @@ app.get("/api/statistics", async (req, res) => {
          WHERE betriebId = :betriebId
          AND reservedFor BETWEEN :startDate AND :endDate
          GROUP BY weekday
+         HAVING weekday <= '6'
          ORDER BY weekday; `,
       {
         replacements: { betriebId, startDate, endDate },
+        type: QueryTypes.SELECT, // ✅ This ensures we get a flat array
+        raw: true, // ✅ This ensures we get plain JSON objects instead of a nested array
       }
     );
     res.json(statistics);
